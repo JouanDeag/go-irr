@@ -1,0 +1,8 @@
+services:
+    go-irr:
+        image: J
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - '8080:8080'
