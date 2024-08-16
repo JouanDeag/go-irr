@@ -140,7 +140,18 @@ func getPrefixList(addressFamily string, routerOs string, asnOrAsSet string, isA
 		asnOrAsSet = strings.ReplaceAll(asnOrAsSet, "_", ":")
 	}
 
-	cmd := exec.Command("bgpq4", "-"+addressFamily, "-"+routerOs, asnOrAsSet)
+	aggregate := "-3"
+
+	if routerOs != "J" {
+		aggregate = "-A"
+	}
+
+	maxLen := "-m 24"
+	if addressFamily == "6" {
+		maxLen = "-m 48"
+	}
+
+	cmd := exec.Command("bgpq4", aggregate, maxLen, "-"+addressFamily, "-"+routerOs, asnOrAsSet)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

@@ -1,6 +1,6 @@
 services:
     go-irr:
-        image: ghcr.io/jouandeag/go-irr:main
+        image: ghcr.io/jouandeag/go-irr:latest
         ports:
             - '8080:8080'
         environment:
