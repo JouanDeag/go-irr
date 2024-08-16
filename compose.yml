@@ -1,8 +1,5 @@
 services:
     go-irr:
-        image: J
-        build:
-            context: .
-            dockerfile: Dockerfile
+        image: ghcr.io/jouandeag/go-irr:main
         ports:
             - '8080:8080'
