@@ -74,7 +74,7 @@ func getPrefixListFromCache(c *gin.Context) {
 	// Make sure asnOrAsSet is correct format
 	// AS\d{1,5} or AS-SET
 
-	isASN, _ := regexp.MatchString("AS\\d{1,6}$", asnOrAsSet)
+	isASN, _ := regexp.MatchString("^AS\\d{1,6}$", asnOrAsSet)
 	isLegacyAsSet, _ := regexp.MatchString("^AS-[a-zA-Z0-9]{1,32}$", asnOrAsSet)
 	isModernAsSet, _ := regexp.MatchString("^AS\\d{1,6}:AS-[a-zA-Z0-9]{1,32}$", asnOrAsSet)
 	isAristaAsSet, _ := regexp.MatchString("^AS\\d{1,6}_AS-[a-zA-Z0-9]{1,32}$", asnOrAsSet)
