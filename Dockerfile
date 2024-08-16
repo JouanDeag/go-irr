@@ -6,7 +6,7 @@
         RUN go mod download
 
         COPY . .        
-        RUN go build -o /go-irr-server main.go
+        RUN go build -ldflags "-s -w" -o /go-irr-server main.go
 
         # Runtime environment
         FROM alpine:edge AS runtime
