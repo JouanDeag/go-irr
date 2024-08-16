@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -141,9 +140,8 @@ func getPrefixList(addressFamily string, routerOs string, asnOrAsSet string, isA
 		asnOrAsSet = strings.ReplaceAll(asnOrAsSet, "_", ":")
 	}
 
-	bgpq4 := fmt.Sprintf("bgpq4 -%s -%s %s", addressFamily, routerOs, asnOrAsSet)
+	cmd := exec.Command("bgpq4", "-"+addressFamily, "-"+routerOs, asnOrAsSet)
 
-	cmd := exec.Command("sh", "-c", bgpq4)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
