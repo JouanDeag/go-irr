@@ -6,6 +6,7 @@ A simple API for bgpq4, written in Go.
 
 ```
 GET /routeros/addressfamily/ASorAS-SET
+GET /routeros/addressfamily/ASorAS-SET?name=myprefixlist
 ```
 
 ### Examples:
