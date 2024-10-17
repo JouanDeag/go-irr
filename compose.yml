@@ -3,5 +3,3 @@ services:
         image: ghcr.io/jouandeag/go-irr:latest
         ports:
             - '8080:8080'
-        environment:
-            - GIN_MODE=release

@@ -2,12 +2,12 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"net/http"
 	"os/exec"
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 var cache map[string]map[string]map[string]string
@@ -28,7 +28,7 @@ func purgeCache() {
 	}
 }
 
-func getPrefixListFromCache(c *gin.Context) {
+func getPrefixListFromCache(w http.ResponseWriter, r *http.Request) {
 	supportedVendors := map[string]string{
 		"arista":    "e",
 		"eos":       "e",
@@ -43,15 +43,17 @@ func getPrefixListFromCache(c *gin.Context) {
 		"v6": "6",
 	}
 
-	path := strings.Split(c.Request.URL.String(), "/")
+	path := strings.Split(r.RequestURI, "/")
 
-	c.Header("Content-Type", "text/plain")
+	fmt.Println(path)
+
+	w.Header().Set("Content-Type", "text/plain")
 
 	// Minimum path length is 4
 	// /vendor/addressfamily/AS1234:AS-SET
 
 	if len(path) != 4 {
-		c.String(404, "Not found")
+		w.WriteHeader(400)
 		return
 	}
 
@@ -67,7 +69,7 @@ func getPrefixListFromCache(c *gin.Context) {
 	}
 
 	if routerOs == "" || addressFamily == "" || !strings.HasPrefix((asnOrAsSet), "AS") {
-		c.String(400, "Bad request")
+		w.WriteHeader(400)
 		return
 	}
 
@@ -80,7 +82,7 @@ func getPrefixListFromCache(c *gin.Context) {
 	isAristaAsSet, _ := regexp.MatchString("^AS\\d{1,6}_AS-[a-zA-Z0-9]{1,32}$", asnOrAsSet)
 
 	if !isASN && !isLegacyAsSet && !isModernAsSet && !isAristaAsSet {
-		c.String(400, "Bad request")
+		w.WriteHeader(400)
 		return
 	}
 
@@ -101,14 +103,15 @@ func getPrefixListFromCache(c *gin.Context) {
 			cacheData = strings.Join(lines[2:], "\n")
 		}
 
-		c.String(200, cacheData)
+		w.WriteHeader(200)
+		w.Write([]byte(cacheData))
 		return
 	}
 
 	output := getPrefixList(addressFamily, routerOs, asnOrAsSet, isAristaAsSet)
 
 	if output == "" {
-		c.String(500, "Internal server error")
+		w.WriteHeader(500)
 		return
 	}
 
@@ -131,7 +134,8 @@ func getPrefixListFromCache(c *gin.Context) {
 		output = strings.Join(lines[2:], "\n")
 	}
 
-	c.String(200, output)
+	w.WriteHeader(200)
+	w.Write([]byte(output))
 }
 
 func getPrefixList(addressFamily string, routerOs string, asnOrAsSet string, isAristaAsSet bool) string {
@@ -167,8 +171,7 @@ func getPrefixList(addressFamily string, routerOs string, asnOrAsSet string, isA
 
 func main() {
 
-	router := gin.Default()
-	router.NoRoute(getPrefixListFromCache)
+	http.HandleFunc("/", getPrefixListFromCache)
 
-	router.Run("[::]:8080")
+	http.ListenAndServe(":8080", nil)
 }
