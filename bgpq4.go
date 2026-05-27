@@ -6,6 +6,30 @@ import (
 	"strings"
 )
 
+// ValidSources is the set of IRR databases bgpq4 knows about.
+var ValidSources = map[string]struct{}{
+	"AFRINIC":     {},
+	"ALTDB":       {},
+	"APNIC":       {},
+	"ARIN":        {},
+	"ARIN-NONAUTH": {},
+	"BBOI":        {},
+	"BELL":        {},
+	"CANARIE":     {},
+	"IDNIC":       {},
+	"INTERNAL":    {},
+	"JPIRR":       {},
+	"LACNIC":      {},
+	"LEVEL3":      {},
+	"NTTCOM":      {},
+	"RADB":        {},
+	"REGISTROBR":  {},
+	"RIPE":        {},
+	"RIPE-NONAUTH": {},
+	"RPKI":        {},
+	"TC":          {},
+}
+
 var vendorShorthands = map[string]string{
 	"arista":    "e",
 	"eos":       "e",
@@ -24,13 +48,13 @@ var addrFamilyShorthands = map[string]string{
 	"v6": "6",
 }
 
-func queryBgpq4(vendorName string, addrFamily string, asnOrAsSet string) string {
+func queryBgpq4(vendorName string, addrFamily string, asnOrAsSet string, sources []string) string {
 	var args []string
 
 	vendor := vendorShorthands[strings.ToLower(vendorName)]
 	addrFamily = addrFamilyShorthands[strings.ToLower(addrFamily)]
 
-	args = append(args, "-S"+strings.Join(conf.sources, ","), "-"+addrFamily, "-A")
+	args = append(args, "-S"+strings.Join(sources, ","), "-"+addrFamily, "-A")
 
 	if vendor != "" {
 		args = append(args, "-"+vendor)

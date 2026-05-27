@@ -5,3 +5,4 @@ services:
             - "8080:8080"
         environment:
             - SOURCES=AFRINIC,APNIC,ARIN,LACNIC,RIPE,RPKI
+            - ALLOW_SOURCE_OVERRIDE=false

@@ -7,6 +7,7 @@ A simple API for bgpq4, written in Go.
 ```
 GET /routeros/addressfamily/ASorAS-SET
 GET /routeros/addressfamily/ASorAS-SET?name=myprefixlist
+GET /routeros/addressfamily/ASorAS-SET?sources=RIPE,ARIN
 ```
 
 ## Config
@@ -15,6 +16,8 @@ GET /routeros/addressfamily/ASorAS-SET?name=myprefixlist
 - `SOURCES`  
     What gets passed to bgpq4's `-S` field. Default:
     `NTTCOM,INTERNAL,LACNIC,RADB,RIPE,RIPE-NONAUTH,ALTDB,BELL,LEVEL3,APNIC,JPIRR,ARIN,BBOI,TC,AFRINIC,IDNIC,RPKI,REGISTROBR,CANARIE`
+
+    Can also be overridden per-request via the `sources` query parameter (comma-separated, case-insensitive). The per-request value takes priority over this environment variable.
 
 - `MATCH_PARENT`  
     If bgpq4 should match parent prefixes (not just the exact route object). Enabled by default.
@@ -46,6 +49,10 @@ GET /arista/v6/AS208453:AS-SWEHOSTING
 
 # For systems which do not permit ":" in the URI
 GET /eos/v4/AS208453_AS-CUST
+
+# Override IRR sources for this request only
+GET /arista/v4/AS208453?sources=RIPE,ARIN
+GET /bird/v6/AS208453:AS-SWEHOSTING?sources=RPKI
 ```
 
 ## Supported versions

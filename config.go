@@ -8,12 +8,13 @@ import (
 )
 
 type config struct {
-	sources          []string
-	matchParent      bool
-	listen           string
-	cacheTime        time.Duration
-	allowCacheBypass bool
-	allowCacheClear  bool
+	sources              []string
+	matchParent          bool
+	listen               string
+	cacheTime            time.Duration
+	allowCacheBypass     bool
+	allowCacheClear      bool
+	allowSourceOverride  bool
 }
 
 func loadConfig(cfg *config) {
@@ -43,6 +44,11 @@ func loadConfig(cfg *config) {
 	})
 
 	cfg.allowCacheClear = parseEnv("ALLOW_CACHE_CLEAR", false, func(s string) bool {
+		matched, _ := regexp.MatchString("true|1|y(es)?", strings.ToLower(s))
+		return matched
+	})
+
+	cfg.allowSourceOverride = parseEnv("ALLOW_SOURCE_OVERRIDE", false, func(s string) bool {
 		matched, _ := regexp.MatchString("true|1|y(es)?", strings.ToLower(s))
 		return matched
 	})

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -83,15 +84,47 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Determine sources: per-request override takes priority over config default
+	sources := conf.sources
+	if sourcesParam := q.Get("sources"); sourcesParam != "" {
+		if !conf.allowSourceOverride {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		requested := strings.Split(strings.ReplaceAll(sourcesParam, " ", ""), ",")
+		for i, s := range requested {
+			requested[i] = strings.ToUpper(s)
+			if _, ok := ValidSources[requested[i]]; !ok {
+				http.Error(w, "unknown source: "+requested[i], http.StatusBadRequest)
+				return
+			}
+		}
+		sources = requested
+	}
+	// Deduplicate and sort sources so cache key is order-independent
+	seen := make(map[string]struct{}, len(sources))
+	unique := sources[:0]
+	for _, s := range sources {
+		if _, dup := seen[s]; !dup {
+			seen[s] = struct{}{}
+			unique = append(unique, s)
+		}
+	}
+	sources = unique
+	sortedSources := make([]string, len(sources))
+	copy(sortedSources, sources)
+	sort.Strings(sortedSources)
+	sourcesKey := strings.Join(sortedSources, ",")
+
 	// Check if the prefix list is already cached
 	// If it isn't, look it up using bgpq4 and cache the result
 	// Optional cache bypass
-	output := cache.get(vendor, addrFamily, asnOrAsSet)
+	output := cache.get(vendor, addrFamily, asnOrAsSet, sourcesKey)
 	bypassRaw := q.Get("bypassCache")
 	bypass := bypassRaw == "1" || strings.EqualFold(bypassRaw, "true") || strings.EqualFold(bypassRaw, "yes")
 
 	if output == "" || bypass {
-		queried := strings.TrimSpace(queryBgpq4(vendor, addrFamily, asnOrAsSet))
+		queried := strings.TrimSpace(queryBgpq4(vendor, addrFamily, asnOrAsSet, sources))
 
 		if queried == "" {
 			if vendor == "bird" {
@@ -111,7 +144,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 
 		// don't overwrite the cache when the request explicitly bypassed it
 		if !bypass {
-			cache.set(vendor, addrFamily, asnOrAsSet, output)
+			cache.set(vendor, addrFamily, asnOrAsSet, sourcesKey, output)
 		}
 	}
 
