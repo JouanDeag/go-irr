@@ -2,7 +2,8 @@ package main
 
 import (
 	"bytes"
-	"os/exec"
+	"log"
+"os/exec"
 	"strings"
 )
 
@@ -84,6 +85,7 @@ func queryBgpq4(vendorName string, addrFamily string, asnOrAsSet string, sources
 	err := cmd.Run()
 
 	if err != nil {
+		log.Printf("bgpq4 failed: %v; stderr=%s", err, strings.TrimSpace(stderr.String()))
 		return ""
 	}
 
