@@ -107,5 +107,10 @@ func stripHeadersForEos(prefixList string) string {
 }
 
 func skipLines(s string, n int) string {
-	return strings.SplitN(s, "\n", n+1)[n]
+	parts := strings.SplitN(s, "\n", n+1)
+	if len(parts) <= n {
+		// bgpq4 returned fewer lines than we want to strip; treat as no output
+		return ""
+	}
+	return parts[n]
 }

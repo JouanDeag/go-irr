@@ -103,7 +103,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	}
 	// Deduplicate and sort sources so cache key is order-independent
 	seen := make(map[string]struct{}, len(sources))
-	unique := sources[:0]
+	unique := make([]string, 0, len(sources))
 	for _, s := range sources {
 		if _, dup := seen[s]; !dup {
 			seen[s] = struct{}{}
