@@ -1,12 +1,19 @@
 package main
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type prefixCache struct {
+	mu   sync.RWMutex
 	data map[string]map[string]map[string]map[string]string
 }
 
 func (c *prefixCache) init() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.data = make(map[string]map[string]map[string]map[string]string)
 }
 
@@ -18,11 +25,17 @@ func (c *prefixCache) purgeEvery(t time.Duration) {
 	}
 }
 
-func (c prefixCache) get(vendor string, addrFamily string, asnOrAsSet string, sourcesKey string) string {
+func (c *prefixCache) get(vendor string, addrFamily string, asnOrAsSet string, sourcesKey string) string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	return c.data[vendor][addrFamily][asnOrAsSet][sourcesKey]
 }
 
 func (c *prefixCache) set(vendor string, addrFamily string, asnOrAsSet string, sourcesKey string, v string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if c.data[vendor] == nil {
 		c.data[vendor] = make(map[string]map[string]map[string]string)
 	}

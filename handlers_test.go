@@ -12,7 +12,7 @@ func resetHandlerState(t *testing.T) {
 	t.Helper()
 
 	oldConf := conf
-	oldCache := cache
+	oldCacheData := cache.data
 
 	conf = config{
 		sources:             []string{"RIPE", "ARIN", "RIPE"},
@@ -27,7 +27,7 @@ func resetHandlerState(t *testing.T) {
 
 	t.Cleanup(func() {
 		conf = oldConf
-		cache = oldCache
+		cache.data = oldCacheData
 	})
 }
 
