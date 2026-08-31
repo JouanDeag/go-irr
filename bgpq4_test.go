@@ -37,3 +37,13 @@ func TestStripHeadersForEos(t *testing.T) {
 		})
 	}
 }
+
+func TestSkipLinesShorterThanRequested(t *testing.T) {
+	if got := skipLines("only one line\n", 2); got != "" {
+		t.Fatalf("skipLines() = %q, want empty string", got)
+	}
+	// Used to panic with index out of range, killing the request goroutine.
+	if got := stripHeadersForEos("no ip prefix-list NN\n"); got != "" {
+		t.Fatalf("stripHeadersForEos() = %q, want empty string", got)
+	}
+}

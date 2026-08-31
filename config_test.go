@@ -49,3 +49,20 @@ func TestParseEnvUsesDefaultWhenUnset(t *testing.T) {
 		t.Fatalf("parseEnv() = %q, want fallback", got)
 	}
 }
+
+func TestLoadConfigBooleansRequireExactMatch(t *testing.T) {
+	// The old unanchored pattern matched any value containing "y" or "1",
+	// so these both turned the flag on.
+	t.Setenv("ALLOW_CACHE_CLEAR", "deny")
+	t.Setenv("MATCH_PARENT", "onlyweekdays")
+
+	var cfg config
+	loadConfig(&cfg)
+
+	if cfg.allowCacheClear {
+		t.Fatal(`allowCacheClear = true for "deny", want false`)
+	}
+	if cfg.matchParent {
+		t.Fatal(`matchParent = true for "onlyweekdays", want false`)
+	}
+}

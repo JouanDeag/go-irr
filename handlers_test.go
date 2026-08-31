@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -162,5 +163,24 @@ func TestHandleRejectsInvalidRequests(t *testing.T) {
 				t.Fatalf("status = %d, want %d", rr.Code, tt.want)
 			}
 		})
+	}
+}
+
+func TestHandleDoesNotMutateConfiguredSources(t *testing.T) {
+	resetHandlerState(t)
+	conf.sources = []string{"RIPE", "ARIN", "RIPE", "NTTCOM"}
+	cache.set("arista", "v4", "AS123", "ARIN,NTTCOM,RIPE", "NN permit 192.0.2.0/24\n")
+
+	rr := httptest.NewRecorder()
+	handle(rr, httptest.NewRequest(http.MethodGet, "/arista/v4/AS123", nil))
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusOK)
+	}
+	// Dedup used to write into conf.sources' backing array, corrupting shared
+	// config and racing between concurrent requests.
+	want := []string{"RIPE", "ARIN", "RIPE", "NTTCOM"}
+	if !reflect.DeepEqual(conf.sources, want) {
+		t.Fatalf("conf.sources = %#v, want %#v", conf.sources, want)
 	}
 }

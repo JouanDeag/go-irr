@@ -26,10 +26,7 @@ func loadConfig(cfg *config) {
 			return strings.Split(strings.ReplaceAll(s, ", ", ","), ",")
 		})
 
-	cfg.matchParent = parseEnv("MATCH_PARENT", true, func(s string) bool {
-		matched, _ := regexp.MatchString("true|1|y(es)?", strings.ToLower(s))
-		return matched
-	})
+	cfg.matchParent = parseBool("MATCH_PARENT", true)
 
 	cfg.listen = fetchEnv("LISTEN", "[::]:8080")
 
@@ -38,21 +35,22 @@ func loadConfig(cfg *config) {
 		return d
 	})
 
-	cfg.allowCacheBypass = parseEnv("ALLOW_CACHE_BYPASS", false, func(s string) bool {
-		matched, _ := regexp.MatchString("true|1|y(es)?", strings.ToLower(s))
-		return matched
-	})
+	cfg.allowCacheBypass = parseBool("ALLOW_CACHE_BYPASS", false)
 
-	cfg.allowCacheClear = parseEnv("ALLOW_CACHE_CLEAR", false, func(s string) bool {
-		matched, _ := regexp.MatchString("true|1|y(es)?", strings.ToLower(s))
-		return matched
-	})
+	cfg.allowCacheClear = parseBool("ALLOW_CACHE_CLEAR", false)
 
-	cfg.allowSourceOverride = parseEnv("ALLOW_SOURCE_OVERRIDE", false, func(s string) bool {
-		matched, _ := regexp.MatchString("true|1|y(es)?", strings.ToLower(s))
-		return matched
-	})
+	cfg.allowSourceOverride = parseBool("ALLOW_SOURCE_OVERRIDE", false)
 
+}
+
+// boolPattern is anchored: an unanchored alternation matches any value
+// *containing* "y", so ALLOW_CACHE_CLEAR=deny used to enable cache clearing.
+var boolPattern = regexp.MustCompile(`^(true|1|y|yes)$`)
+
+func parseBool(key string, defaultValue bool) bool {
+	return parseEnv(key, defaultValue, func(s string) bool {
+		return boolPattern.MatchString(strings.ToLower(strings.TrimSpace(s)))
+	})
 }
 
 type envParser[T any] func(string) T
