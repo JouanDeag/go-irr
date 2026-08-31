@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"fmt"
+	"sync"
+	"testing"
+)
 
 func TestPrefixCacheSetAndGet(t *testing.T) {
 	var c prefixCache
@@ -69,4 +73,29 @@ func TestPrefixCacheSetAndGet(t *testing.T) {
 	if got := c.get("arista", "v4", "AS123", "ARIN,RIPE"); got != "" {
 		t.Fatalf("cache get after init = %q, want empty string", got)
 	}
+}
+
+func TestPrefixCacheConcurrentAccess(t *testing.T) {
+	var c prefixCache
+	c.init()
+
+	var wg sync.WaitGroup
+	for i := range 8 {
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			c.set("arista", "v4", fmt.Sprintf("AS%d", i), "RIPE", "output")
+		}()
+		go func() {
+			defer wg.Done()
+			c.get("arista", "v4", fmt.Sprintf("AS%d", i), "RIPE")
+		}()
+	}
+	// purgeEvery's goroutine re-inits the map underneath live requests.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		c.init()
+	}()
+	wg.Wait()
 }
