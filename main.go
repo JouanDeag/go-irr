@@ -11,6 +11,8 @@ import (
 var cache prefixCache
 var conf config
 
+var asnOrAsSetPattern = regexp.MustCompile(`^AS[A-Z0-9:-]{1,48}$`)
+
 func init() {
 	cache.init()
 	loadConfig(&conf)
@@ -73,13 +75,8 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Make sure asnOrAsSet is correct format
-	// AS\d{1,5} or AS-SET
-
-	isASN, _ := regexp.MatchString("^AS\\d{1,6}$", asnOrAsSet)
-	isAsSet, _ := regexp.MatchString("^AS[A-Z0-9:-]{1,48}$", asnOrAsSet)
-
-	if !isASN && !isAsSet {
+	// Make sure asnOrAsSet is correct format: AS1234 or an AS-SET name
+	if !asnOrAsSetPattern.MatchString(asnOrAsSet) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

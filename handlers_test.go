@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -182,5 +183,23 @@ func TestHandleDoesNotMutateConfiguredSources(t *testing.T) {
 	want := []string{"RIPE", "ARIN", "RIPE", "NTTCOM"}
 	if !reflect.DeepEqual(conf.sources, want) {
 		t.Fatalf("conf.sources = %#v, want %#v", conf.sources, want)
+	}
+}
+
+func TestASNOrAsSetPattern(t *testing.T) {
+	// The old code also tried `^AS\d{1,6}$`, but every value it matched is
+	// already matched by this one, so the extra check was dead.
+	valid := []string{"AS1", "AS123456", "AS1234567890", "AS-SET", "AS64500:AS-CUSTOMERS"}
+	invalid := []string{"AS", "as123", "AS123 ", "AS_SET", "AS!", strings.Repeat("AS1", 20)}
+
+	for _, s := range valid {
+		if !asnOrAsSetPattern.MatchString(s) {
+			t.Errorf("asnOrAsSetPattern rejected %q, want match", s)
+		}
+	}
+	for _, s := range invalid {
+		if asnOrAsSetPattern.MatchString(s) {
+			t.Errorf("asnOrAsSetPattern matched %q, want no match", s)
+		}
 	}
 }
