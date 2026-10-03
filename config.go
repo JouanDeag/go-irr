@@ -8,13 +8,13 @@ import (
 )
 
 type config struct {
-	sources              []string
-	matchParent          bool
-	listen               string
-	cacheTime            time.Duration
-	allowCacheBypass     bool
-	allowCacheClear      bool
-	allowSourceOverride  bool
+	sources             []string
+	matchParent         bool
+	listen              string
+	cacheTime           time.Duration
+	allowCacheBypass    bool
+	allowCacheClear     bool
+	allowSourceOverride bool
 }
 
 func loadConfig(cfg *config) {
