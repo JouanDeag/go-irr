@@ -68,7 +68,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	addrFamily := path[2]
 	asnOrAsSet := strings.ReplaceAll(strings.ToUpper(path[3]), "_", ":")
 
-	if vendor == "" || addrFamily == "" || !strings.HasPrefix((asnOrAsSet), "AS") {
+	if vendor == "" || !isValidAddrFamily(addrFamily) || !strings.HasPrefix((asnOrAsSet), "AS") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
