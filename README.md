@@ -75,7 +75,11 @@ GET /bird/v6/AS208453:AS-SWEHOSTING?sources=RPKI
 ```
 /brand/v4/
 /brand/v6/
+/brand/v4-bh/
+/brand/v6-bh/
 ```
+
+The `-bh` variants are meant for validating RTBH announcements, allowing up to /32 on IPv4 and /128 on IPv6.
 
 ## Hosted version
 

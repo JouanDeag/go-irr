@@ -129,6 +129,11 @@ func TestHandleRejectsInvalidRequests(t *testing.T) {
 			want: http.StatusBadRequest,
 		},
 		{
+			name: "unknown address family",
+			path: "/arista/v5/AS123",
+			want: http.StatusBadRequest,
+		},
+		{
 			name: "cache bypass forbidden",
 			path: "/arista/v4/AS123?bypassCache=1",
 			want: http.StatusForbidden,
